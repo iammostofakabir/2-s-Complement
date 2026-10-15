@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSC ICT 2's Complement Subtraction Simulator (A - B)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Hind Siliguri for Bengali & JetBrains Mono for Bits/Numbers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+        .mono-bits {
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.08em;
+        }
+        .bit-cell {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.1rem;
+            height: 2.35rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            user-select: all;
+        }
+        @media (max-width: 640px) {
+            .bit-cell {
+                width: 1.75rem;
+                height: 2rem;
+                font-size: 0.78rem;
+            }
+        }
+        /* Minimalist Dark Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 2px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #52525b;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-6 px-3 sm:px-6 lg:px-8 bg-black text-white selection:bg-white selection:text-black">
+
+    <div class="max-w-5xl mx-auto space-y-6">
+
+        <!-- Top Header & Minimal Creator Info -->
+        <header class="border border-neutral-800 bg-[#0a0a0a] p-5 sm:p-7 rounded-xl space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-800 pb-3">
+                <span class="inline-block px-2.5 py-0.5 bg-white text-black font-bold text-xs uppercase tracking-wider rounded">
+                    HSC ICT • অধ্যায় 3
+                </span>
+                
+                <!-- Strictly Minimal Creator Line -->
+                <div class="text-xs sm:text-sm font-semibold text-white tracking-wide">
+                    মোস্তফা কবির <span class="text-neutral-500 mx-1">•</span> <a href="tel:01944570784" class="font-mono hover:underline">01944570784</a>
+                </div>
+            </div>
+
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                    2-এর পরিপূরকে যোগের মাধ্যমে বিয়োগ <span class="font-mono text-neutral-400 text-lg sm:text-xl font-normal">(A - B)</span>
+                </h1>
+                <p class="text-neutral-400 text-xs sm:text-sm mt-1">
+                    কম্পিউটারে <span class="text-white font-mono bg-neutral-900 px-1.5 py-0.5 border border-neutral-800 rounded">A - B = A + (-B)</span> সূত্রে যোগের মাধ্যমে বিয়োগ করা হয়। তুমি সংখ্যা দিলে এটি স্বয়ংক্রিয়ভাবে 8-বিট বা 16-বিট রেজিস্টার বেছে নেবে।
+                </p>
+            </div>
+        </header>
+
+        <!-- Input & Register Controls Card -->
+        <section class="border border-neutral-800 bg-[#0a0a0a] p-5 sm:p-6 rounded-xl space-y-5">
+            
+            <!-- Register Width Selector -->
+            <div class="bg-black border border-neutral-800 p-3.5 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-neutral-300 block">রেজিস্টার মোড (Register Width)</span>
+                    <p class="text-xs text-neutral-500 mt-0.5" id="regModeHint">সংখ্যা অনুযায়ী স্বয়ংক্রিয়ভাবে 8-বিট বা 16-বিট রেজিস্টার নির্ধারিত হবে।</p>
+                </div>
+                
+                <div class="inline-flex p-1 bg-neutral-900 border border-neutral-800 rounded-lg text-xs font-semibold self-start sm:self-auto">
+                    <button type="button" id="btnModeAuto" onclick="setRegisterMode('auto')" class="px-3 py-1.5 rounded transition bg-white text-black font-bold">
+                        স্বয়ংক্রিয় (Auto)
+                    </button>
+                    <button type="button" id="btnMode8" onclick="setRegisterMode('8')" class="px-3 py-1.5 rounded transition text-neutral-400 hover:text-white">
+                        8-বিট (8-bit)
+                    </button>
+                    <button type="button" id="btnMode16" onclick="setRegisterMode('16')" class="px-3 py-1.5 rounded transition text-neutral-400 hover:text-white">
+                        16-বিট (16-bit)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Number Inputs Grid (A and B) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- Input A Box -->
+                <div class="bg-black border border-neutral-800 p-4 rounded-lg space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <label for="inputA" class="font-bold text-white text-sm sm:text-base">
+                            প্রথম সংখ্যা <span class="font-mono text-white bg-neutral-800 px-1.5 py-0.5 rounded text-xs">(A)</span>
+                        </label>
+                        <div class="flex items-center gap-1.5 text-xs text-neutral-400">
+                            <span>ভিত্তি:</span>
+                            <select id="baseA" class="bg-neutral-900 text-white border border-neutral-700 rounded px-2 py-1 outline-none focus:border-white transition text-xs font-mono">
+                                <option value="10" selected>দশমিক (10)</option>
+                                <option value="2">বাইনারি (2)</option>
+                                <option value="8">অক্টাল (8)</option>
+                                <option value="16">হেক্সাডেসিমাল (16)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="text" id="inputA" value="35" placeholder="সংখ্যাটি লেখো..."
+                        class="w-full bg-neutral-900 border border-neutral-700 focus:border-white text-white font-mono text-base sm:text-lg rounded px-3 py-2 outline-none uppercase transition" />
+                </div>
+
+                <!-- Input B Box -->
+                <div class="bg-black border border-neutral-800 p-4 rounded-lg space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <label for="inputB" class="font-bold text-white text-sm sm:text-base">
+                            দ্বিতীয় সংখ্যা <span class="font-mono text-white bg-neutral-800 px-1.5 py-0.5 rounded text-xs">(B)</span>
+                        </label>
+                        <div class="flex items-center gap-1.5 text-xs text-neutral-400">
+                            <span>ভিত্তি:</span>
+                            <select id="baseB" class="bg-neutral-900 text-white border border-neutral-700 rounded px-2 py-1 outline-none focus:border-white transition text-xs font-mono">
+                                <option value="10" selected>দশমিক (10)</option>
+                                <option value="2">বাইনারি (2)</option>
+                                <option value="8">অক্টাল (8)</option>
+                                <option value="16">হেক্সাডেসিমাল (16)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="text" id="inputB" value="25" placeholder="সংখ্যাটি লেখো..."
+                        class="w-full bg-neutral-900 border border-neutral-700 focus:border-white text-white font-mono text-base sm:text-lg rounded px-3 py-2 outline-none uppercase transition" />
+                </div>
+
+            </div>
+
+            <!-- Error Banner -->
+            <div id="errorAlert" class="hidden p-3.5 bg-neutral-900 border-2 border-white text-white rounded text-xs sm:text-sm font-semibold flex items-center gap-2">
+                <span class="text-base font-bold">✕</span>
+                <span id="errorMessage">ভুল ইনপুট!</span>
+            </div>
+
+            <!-- Active Register Banner with Explicit Explanation -->
+            <div class="p-3.5 bg-neutral-900 border border-neutral-800 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+                <div class="flex items-start sm:items-center gap-2.5">
+                    <span id="bitStatusBadge" class="px-2.5 py-1 bg-white text-black font-bold text-xs uppercase rounded shrink-0 font-mono">
+                        8-বিট রেজিস্টার
+                    </span>
+                    <span id="bitStatusText" class="text-neutral-300 leading-relaxed">
+                        A এবং B উভয়ের বাইনারি মান চিহ্ন বিটসহ 8-বিটের মধ্যে আঁটায় 8-বিট রেজিস্টার ব্যবহৃত হচ্ছে।
+                    </span>
+                </div>
+                <div class="font-mono text-neutral-300 font-bold shrink-0 self-end sm:self-center" id="operationBadge">
+                    A - B = A + (-B)
+                </div>
+            </div>
+        </section>
+
+        <!-- Step-by-Step Calculation Container -->
+        <main id="stepsWrapper" class="space-y-6">
+
+            <!-- ধাপ 1: প্রথম সংখ্যা (A) এর বাইনারি ও রেজিস্টার মান -->
+            <div class="border border-neutral-800 bg-[#0a0a0a] p-5 sm:p-6 rounded-xl space-y-4">
+                <div class="flex items-center gap-2 border-b border-neutral-800 pb-3">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded bg-white text-black font-mono font-bold text-xs">1</span>
+                    <h2 class="text-base sm:text-lg font-bold text-white" id="step1Title">
+                        প্রথম সংখ্যা (A) এর বাইনারি ও 8-বিট রেজিস্টার মান
+                    </h2>
+                </div>
+
+                <!-- Direct Shortcut Conversion Box for A -->
+                <div class="bg-black border border-neutral-800 p-4 rounded-lg space-y-2.5" id="shortcutBoxA"></div>
+
+                <!-- Register Bit Representation of A -->
+                <div class="space-y-2 pt-1">
+                    <p class="text-xs sm:text-sm text-neutral-300" id="regDescA"></p>
+                    <div class="overflow-x-auto py-1">
+                        <div class="flex flex-nowrap items-center gap-1 min-w-max" id="bitsRowA"></div>
+                    </div>
+                    <p class="text-xs text-neutral-500">
+                        *সর্ববামের সাদা ঘরটি চিহ্ন বিট (Sign Bit): <code class="text-neutral-300 font-mono">0</code> = ধনাত্মক (+), <code class="text-neutral-300 font-mono">1</code> = ঋণাত্মক (-)।
+                    </p>
+                </div>
+            </div>
+
+            <!-- ধাপ 2: দ্বিতীয় সংখ্যা (B) এর বাইনারি ও 2-এর পরিপূরক (-B) নির্ণয় -->
+            <div class="border border-neutral-800 bg-[#0a0a0a] p-5 sm:p-6 rounded-xl space-y-4">
+                <div class="flex items-center gap-2 border-b border-neutral-800 pb-3">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded bg-white text-black font-mono font-bold text-xs">2</span>
+                    <h2 class="text-base sm:text-lg font-bold text-white" id="step2Title">
+                        দ্বিতীয় সংখ্যা (B) এর বাইনারি ও 8-বিট 2-এর পরিপূরক (-B) নির্ণয়
+                    </h2>
+                </div>
+
+                <!-- Direct Shortcut Conversion Box for B -->
+                <div class="bg-black border border-neutral-800 p-4 rounded-lg space-y-2.5" id="shortcutBoxB"></div>
+
+                <!-- ধাপ 2.1: B এর রেজিস্টার মান -->
+                <div class="bg-black p-4 rounded-lg border border-neutral-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-neutral-300" id="labelBRegTitle">ধাপ 2.1: B এর 8-বিট রেজিস্টার মান</span>
+                        <span class="text-xs font-mono text-neutral-400">বামে 0 বসিয়ে বিট পূর্ণ</span>
+                    </div>
+                    <div class="overflow-x-auto py-1">
+                        <div class="flex flex-nowrap items-center gap-1 min-w-max" id="bitsRowBMag"></div>
+                    </div>
+                </div>
+
+                <!-- ধাপ 2.2: 1-এর পরিপূরক -->
+                <div class="bg-black p-4 rounded-lg border border-neutral-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-neutral-300">ধাপ 2.2: 1-এর পরিপূরক (1's Complement)</span>
+                        <span class="text-xs font-mono text-neutral-400">প্রতিটি বিট উল্টে (0 → 1, 1 → 0)</span>
+                    </div>
+                    <div class="overflow-x-auto py-1">
+                        <div class="flex flex-nowrap items-center gap-1 min-w-max" id="bitsRowBOnes"></div>
+                    </div>
+                </div>
+
+                <!-- ধাপ 2.3: 2-এর পরিপূরক (-B) - Systematic +1 Addition Table with Carry -->
+                <div class="bg-black p-4 rounded-lg border-2 border-white space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-white">ধাপ 2.3: 2-এর পরিপূরক বা (-B) নির্ণয় (1's Complement + 1)</span>
+                        <span class="text-xs font-mono text-neutral-300">1-এর পরিপূরকের সাথে 1 যোগ</span>
+                    </div>
+                    <div class="overflow-x-auto bg-[#050505] p-3 rounded border border-neutral-800" id="step23AdditionBox"></div>
+                </div>
+            </div>
+
+            <!-- ধাপ 3: বাইনারি যোগ: A + (-B) -->
+            <div class="border border-neutral-800 bg-[#0a0a0a] p-5 sm:p-6 rounded-xl space-y-4">
+                <div class="flex items-center gap-2 border-b border-neutral-800 pb-3">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded bg-white text-black font-mono font-bold text-xs">3</span>
+                    <h2 class="text-base sm:text-lg font-bold text-white" id="step3Title">
+                        8-বিট বাইনারি যোগ: A + (-B)
+                    </h2>
+                </div>
+
+                <!-- Full Adder Table -->
+                <div class="overflow-x-auto bg-black p-4 rounded-lg border border-neutral-800">
+                    <table class="mx-auto text-center border-collapse text-xs sm:text-sm" id="adderTable">
+                        <thead id="tblHead"></thead>
+                        <tbody class="font-mono text-sm sm:text-base">
+                            <tr class="text-xs text-neutral-400 border-b border-neutral-900" id="tblRowCarry"></tr>
+                            <tr class="text-neutral-200 border-b border-neutral-900" id="tblRowA"></tr>
+                            <tr class="text-neutral-200 border-b border-neutral-700" id="tblRowNegB"></tr>
+                            <tr class="text-white font-bold text-base sm:text-lg" id="tblRowSum"></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Carry and Sign Status -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                    <div class="bg-black p-3.5 rounded-lg border border-neutral-800" id="carryNoteBox"></div>
+                    <div class="bg-black p-3.5 rounded-lg border border-neutral-800" id="signNoteBox"></div>
+                </div>
+            </div>
+
+            <!-- ধাপ 4: চূড়ান্ত ফলাফল বিশ্লেষণ (বাইনারি) -->
+            <div class="border-2 border-white bg-[#0a0a0a] p-5 sm:p-6 rounded-xl space-y-4">
+                <div class="flex items-center gap-2 border-b border-neutral-800 pb-3">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded bg-white text-black font-mono font-bold text-xs">4</span>
+                    <h2 class="text-base sm:text-lg font-bold text-white">
+                        চূড়ান্ত ফলাফল বিশ্লেষণ (বাইনারি)
+                    </h2>
+                </div>
+
+                <div id="finalEvaluationBlock" class="space-y-4"></div>
+            </div>
+
+        </main>
+
+        <!-- Minimal Footer -->
+        <footer class="border-t border-neutral-900 pt-4 pb-2 text-center text-xs text-neutral-500">
+            2-এর পরিপূরক পদ্ধতিতে বিয়োগের মূলনীতি: <span class="text-neutral-300 font-mono font-bold">A - B = A + (-B)</span>
+        </footer>
+
+    </div>
+
+    <script>
+        let selectedRegisterMode = 'auto';
+
+        const inputA = document.getElementById('inputA');
+        const inputB = document.getElementById('inputB');
+        const baseA = document.getElementById('baseA');
+        const baseB = document.getElementById('baseB');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        const stepsWrapper = document.getElementById('stepsWrapper');
+        const bitStatusBadge = document.getElementById('bitStatusBadge');
+        const bitStatusText = document.getElementById('bitStatusText');
+        const regModeHint = document.getElementById('regModeHint');
+
+        // Parse input string according to selected base
+        function parseInput(valStr, base) {
+            valStr = (valStr || '').trim().toUpperCase();
+            if (!valStr) {
+                return { valid: false, error: 'তুমি ঘরটি খালি রেখেছ, একটি সংখ্যা লেখো।' };
+            }
+
+            let isNeg = false;
+            let cleanStr = valStr;
+            if (cleanStr.startsWith('-')) {
+                isNeg = true;
+                cleanStr = cleanStr.substring(1).trim();
+            } else if (cleanStr.startsWith('+')) {
+                cleanStr = cleanStr.substring(1).trim();
+            }
+
+            if (!cleanStr) {
+                return { valid: false, error: 'শুধু চিহ্ন দিয়েছ, সংখ্যাটি লেখো।' };
+            }
+
+            // Strip leading zeros but keep at least one '0'
+            cleanStr = cleanStr.replace(/^0+(?!$)/, '');
+
+            let regex, baseName;
+            if (base === 2) {
+                regex = /^[01]+$/;
+                baseName = 'বাইনারি (0, 1)';
+            } else if (base === 8) {
+                regex = /^[0-7]+$/;
+                baseName = 'অক্টাল (0-7)';
+            } else if (base === 10) {
+                regex = /^[0-9]+$/;
+                baseName = 'দশমিক (0-9)';
+            } else if (base === 16) {
+                regex = /^[0-9A-F]+$/;
+                baseName = 'হেক্সাডেসিমাল (0-9, A-F)';
+            }
+
+            if (!regex.test(cleanStr)) {
+                return { valid: false, error: `তোমার দেওয়া "${valStr}" সঠিক ${baseName} সংখ্যা নয়!` };
+            }
+
+            const magVal = parseInt(cleanStr, base);
+            const signedVal = isNeg ? -magVal : magVal;
+
+            if (signedVal < -32768 || signedVal > 32767) {
+                return { valid: false, error: 'সংখ্যাটি 16-বিট রেজিস্টারের ধারণক্ষমতার (-32768 থেকে +32767) বাইরে চলে গেছে!' };
+            }
+
+            return {
+                valid: true,
+                value: signedVal,
+                magVal: magVal,
+                isNeg: isNeg,
+                cleanStr: cleanStr,
+                rawStr: valStr,
+                base: base
+            };
+        }
+
+        // Convert signed value to N-bit 2's complement binary string
+        function toTwosComplement(num, bitWidth) {
+            const unsignedVal = (num < 0) ? ((1 << bitWidth) + num) : num;
+            const mask = (bitWidth === 16) ? 0xFFFF : 0xFF;
+            return (unsignedVal & mask).toString(2).padStart(bitWidth, '0');
+        }
+
+        // Invert binary string (1's complement)
+        function invertBits(str) {
+            return str.split('').map(b => (b === '0' ? '1' : '0')).join('');
+        }
+
+        // Generate Systematic "+ 1" Addition Table with Carry Row (Blank when carry is 0)
+        function renderPlusOneTableHTML(onesStr, bitWidth, rowLabelOnes, rowLabelResult, highlightSign = true) {
+            let carriesIntoCol = new Array(bitWidth).fill(0);
+            let sumBits = new Array(bitWidth).fill(0);
+            let c = 1; // Adding + 1 at LSB (rightmost column)
+
+            for (let i = bitWidth - 1; i >= 0; i--) {
+                const bit = parseInt(onesStr[i], 10);
+                if (i === bitWidth - 1) {
+                    const s = bit + 1;
+                    sumBits[i] = s % 2;
+                    c = Math.floor(s / 2);
+                } else {
+                    carriesIntoCol[i] = c;
+                    const s = bit + c;
+                    sumBits[i] = s % 2;
+                    c = Math.floor(s / 2);
+                }
+            }
+
+            let html = `<table class="mx-auto text-center border-collapse font-mono text-xs sm:text-sm">`;
+
+            // Header Row (Bit Positions in English digits)
+            html += `<thead class="text-[11px] text-neutral-500 border-b border-neutral-800"><tr>`;
+            html += `<th class="py-1.5 px-2.5 text-right font-sans">বিবরণ</th>`;
+            for (let i = 0; i < bitWidth; i++) {
+                const posNum = bitWidth - i;
+                html += `<th class="py-1.5 px-1.5 ${i === 0 && highlightSign ? 'text-white font-bold' : ''}">${posNum}ম</th>`;
+            }
+            html += `</tr></thead><tbody>`;
+
+            // Row 1: হাতে থাকা (Carry) -> Show '1' ONLY if carry == 1, otherwise leave COMPLETELY BLANK
+            html += `<tr class="text-xs text-neutral-400 border-b border-neutral-900">`;
+            html += `<td class="py-1 px-2.5 text-right font-sans">হাতে থাকা (Carry):</td>`;
+            for (let i = 0; i < bitWidth; i++) {
+                const cText = carriesIntoCol[i] === 1 ? '1' : '';
+                html += `<td class="py-1 px-1.5 font-bold text-white">${cText}</td>`;
+            }
+            html += `</tr>`;
+
+            // Row 2: 1's Complement
+            html += `<tr class="text-neutral-200 border-b border-neutral-900">`;
+            html += `<td class="py-1.5 px-2.5 text-right font-sans font-semibold">${rowLabelOnes} :</td>`;
+            for (let i = 0; i < bitWidth; i++) {
+                html += `<td class="py-1.5 px-1.5">${onesStr[i]}</td>`;
+            }
+            html += `</tr>`;
+
+            // Row 3: + 1 (Only rightmost column has 1, all others completely blank)
+            html += `<tr class="text-neutral-200 border-b border-neutral-700">`;
+            html += `<td class="py-1.5 px-2.5 text-right font-sans font-bold">+ 1 :</td>`;
+            for (let i = 0; i < bitWidth; i++) {
+                const plusText = (i === bitWidth - 1) ? '1' : '';
+                html += `<td class="py-1.5 px-1.5 font-bold text-white">${plusText}</td>`;
+            }
+            html += `</tr>`;
+
+            // Row 4: Result (2's Complement)
+            html += `<tr class="text-white font-bold text-sm sm:text-base">`;
+            html += `<td class="py-2 px-2.5 text-right font-sans font-bold">${rowLabelResult} :</td>`;
+            for (let i = 0; i < bitWidth; i++) {
+                const isSign = (i === 0 && highlightSign);
+                html += `<td class="py-2 px-1.5 ${isSign ? 'bg-white text-black font-extrabold rounded-sm' : 'text-white'}">${sumBits[i]}</td>`;
+            }
+            html += `</tr>`;
+
+            html += `</tbody></table>`;
+            return html;
+        }
+
+        // Generate HSC ICT Shortcut Binary Conversion HTML (Strictly English Digits!)
+        function renderShortcutConversionHTML(parsedObj) {
+            const { magVal, cleanStr, base } = parsedObj;
+            const rawBin = magVal.toString(2);
+
+            // Case 1: Decimal (10) -> Positional weights (..., 32, 16, 8, 4, 2, 1)
+            if (base === 10) {
+                let maxPow = 0;
+                while ((1 << (maxPow + 1)) <= magVal) {
+                    maxPow++;
+                }
+                if (maxPow < 3) maxPow = 3;
+
+                let weights = [];
+                for (let p = maxPow; p >= 0; p--) {
+                    weights.push(1 << p);
+                }
+
+                let rem = magVal;
+                let cellsHtml = '';
+                let activeWeights = [];
+
+                weights.forEach(w => {
+                    let bit = 0;
+                    if (rem >= w) {
+                        bit = 1;
+                        rem -= w;
+                        activeWeights.push(w);
+                    }
+                    cellsHtml += `
+                        <div class="flex flex-col items-center border ${bit === 1 ? 'border-white bg-neutral-900' : 'border-neutral-800 bg-black opacity-60'} rounded px-2.5 py-1.5 min-w-[2.6rem]">
+                            <span class="text-[11px] font-mono ${bit === 1 ? 'text-neutral-200 font-bold' : 'text-neutral-500'} border-b border-neutral-800 w-full text-center pb-0.5">${w}</span>
+                            <span class="text-sm font-mono font-extrabold mt-1 ${bit === 1 ? 'text-white' : 'text-neutral-500'}">${bit}</span>
+                        </div>
+                    `;
+                });
+
+                const sumHint = magVal === 0 
+                    ? 'সবগুলো মান 0' 
+                    : `যোগফল: ${activeWeights.join(' + ')} = ${cleanStr}`;
+
+                return `
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span class="text-neutral-300 font-semibold">দশমিক <strong class="text-white font-mono">(${cleanStr})<sub>10</sub></strong> থেকে শর্টকাট বাইনারি <span class="text-neutral-400 font-mono">(... 16-8-4-2-1)</span>:</span>
+                        <span class="font-mono text-neutral-400">${sumHint}</span>
+                    </div>
+                    <div class="overflow-x-auto py-1">
+                        <div class="inline-flex items-center gap-1.5">${cellsHtml}</div>
+                    </div>
+                    <div class="text-xs text-neutral-300">
+                        প্রাপ্ত বাইনারি মান: <span class="font-mono font-bold text-white bg-neutral-900 px-2 py-0.5 rounded border border-neutral-700">${rawBin}</span>
+                    </div>
+                `;
+            }
+
+            // Case 2: Octal (8) -> 3-bit positional weights (4-2-1) per digit
+            if (base === 8) {
+                const digits = cleanStr.split('');
+                let groupsHtml = '';
+                let binGroups = [];
+
+                digits.forEach(d => {
+                    const b3 = parseInt(d, 8).toString(2).padStart(3, '0');
+                    binGroups.push(b3);
+                    groupsHtml += `
+                        <div class="flex flex-col items-center border border-neutral-700 bg-neutral-900 rounded px-3 py-1.5">
+                            <span class="text-xs font-mono text-neutral-400">অক্টাল অঙ্ক: <strong class="text-white">${d}</strong></span>
+                            <span class="text-[10px] font-mono text-neutral-500">4 - 2 - 1</span>
+                            <span class="text-sm font-mono font-bold text-white tracking-widest mt-0.5">${b3}</span>
+                        </div>
+                    `;
+                });
+
+                return `
+                    <div class="text-xs text-neutral-300 font-semibold">
+                        অক্টাল <strong class="text-white font-mono">(${cleanStr})<sub>8</sub></strong> থেকে 3-বিট বাইনারি <span class="text-neutral-400 font-mono">(4-2-1 পদ্ধতি)</span>:
+                    </div>
+                    <div class="overflow-x-auto py-1">
+                        <div class="inline-flex items-center gap-2">${groupsHtml}</div>
+                    </div>
+                    <div class="text-xs text-neutral-300">
+                        প্রাপ্ত বাইনারি মান: <span class="font-mono font-bold text-white bg-neutral-900 px-2 py-0.5 rounded border border-neutral-700">${binGroups.join(' ')}</span>
+                    </div>
+                `;
+            }
+
+            // Case 3: Hexadecimal (16) -> 4-bit positional weights (8-4-2-1) per digit
+            if (base === 16) {
+                const digits = cleanStr.split('');
+                let groupsHtml = '';
+                let binGroups = [];
+
+                digits.forEach(d => {
+                    const b4 = parseInt(d, 16).toString(2).padStart(4, '0');
+                    binGroups.push(b4);
+                    groupsHtml += `
+                        <div class="flex flex-col items-center border border-neutral-700 bg-neutral-900 rounded px-3 py-1.5">
+                            <span class="text-xs font-mono text-neutral-400">হেক্সা অঙ্ক: <strong class="text-white">${d}</strong></span>
+                            <span class="text-[10px] font-mono text-neutral-500">8 - 4 - 2 - 1</span>
+                            <span class="text-sm font-mono font-bold text-white tracking-widest mt-0.5">${b4}</span>
+                        </div>
+                    `;
+                });
+
+                return `
+                    <div class="text-xs text-neutral-300 font-semibold">
+                        হেক্সাডেসিমাল <strong class="text-white font-mono">(${cleanStr})<sub>16</sub></strong> থেকে 4-বিট বাইনারি <span class="text-neutral-400 font-mono">(8-4-2-1 পদ্ধতি)</span>:
+                    </div>
+                    <div class="overflow-x-auto py-1">
+                        <div class="inline-flex items-center gap-2">${groupsHtml}</div>
+                    </div>
+                    <div class="text-xs text-neutral-300">
+                        প্রাপ্ত বাইনারি মান: <span class="font-mono font-bold text-white bg-neutral-900 px-2 py-0.5 rounded border border-neutral-700">${binGroups.join(' ')}</span>
+                    </div>
+                `;
+            }
+
+            // Case 4: Binary (2) -> Direct Binary
+            return `
+                <div class="text-xs text-neutral-300">
+                    সংখ্যাটি সরাসরি বাইনারিতে দেওয়া আছে: <span class="font-mono font-bold text-white bg-neutral-900 px-2 py-0.5 rounded border border-neutral-700">(${cleanStr})<sub>2</sub></span>
+                </div>
+            `;
+        }
+
+        // Render register bit blocks
+        function renderBitRow(container, bitStr, highlightSign = true) {
+            container.innerHTML = '';
+            for (let i = 0; i < bitStr.length; i++) {
+                const span = document.createElement('span');
+                span.className = 'bit-cell';
+                if (i === 0 && highlightSign) {
+                    span.className += ' bg-white text-black border-2 border-white';
+                    span.title = 'চিহ্ন বিট (Sign Bit)';
+                } else {
+                    span.className += ' bg-neutral-900 text-white border border-neutral-700';
+                }
+                span.textContent = bitStr[i];
+                container.appendChild(span);
+            }
+        }
+
+        // Switch Register Mode
+        function setRegisterMode(mode) {
+            selectedRegisterMode = mode;
+            const modes = [
+                { id: 'btnModeAuto', m: 'auto' },
+                { id: 'btnMode8', m: '8' },
+                { id: 'btnMode16', m: '16' }
+            ];
+            modes.forEach(item => {
+                const btn = document.getElementById(item.id);
+                if (item.m === mode) {
+                    btn.className = 'px-3 py-1.5 rounded transition bg-white text-black font-bold';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded transition text-neutral-400 hover:text-white';
+                }
+            });
+
+            if (mode === 'auto') {
+                regModeHint.textContent = 'সংখ্যা অনুযায়ী স্বয়ংক্রিয়ভাবে 8-বিট বা 16-বিট রেজিস্টার নির্ধারিত হবে।';
+            } else if (mode === '8') {
+                regModeHint.textContent = 'তুমি 8-বিট রেজিস্টার স্থায়ী করেছ।';
+            } else {
+                regModeHint.textContent = 'তুমি 16-বিট রেজিস্টার স্থায়ী করেছ।';
+            }
+
+            processCalculation();
+        }
+
+        // Main Calculation Function
+        function processCalculation() {
+            const bA = parseInt(baseA.value, 10);
+            const bB = parseInt(baseB.value, 10);
+
+            const resA = parseInput(inputA.value, bA);
+            if (!resA.valid) {
+                showError(`প্রথম সংখ্যা (A): ${resA.error}`);
+                return;
+            }
+
+            const resB = parseInput(inputB.value, bB);
+            if (!resB.valid) {
+                showError(`দ্বিতীয় সংখ্যা (B): ${resB.error}`);
+                return;
+            }
+
+            hideError();
+
+            const valA = resA.value;
+            const valB = resB.value;
+            const negB = -valB;
+            const diffResult = valA - valB;
+
+            // Check individual 8-bit compatibility for A, B, and result
+            const aExceeds8Bit = (valA < -128 || valA > 127);
+            const bExceeds8Bit = (valB < -128 || valB > 127 || negB < -128 || negB > 127);
+            const diffExceeds8Bit = (diffResult < -128 || diffResult > 127);
+            const fits8Bit = (!aExceeds8Bit && !bExceeds8Bit && !diffExceeds8Bit);
+
+            const aBinLen = resA.magVal.toString(2).length;
+            const bBinLen = resB.magVal.toString(2).length;
+
+            let bitWidth = 8;
+            if (selectedRegisterMode === 'auto') {
+                if (fits8Bit) {
+                    bitWidth = 8;
+                    bitStatusBadge.textContent = '8-বিট রেজিস্টার';
+                    bitStatusText.textContent = 'এখানে A এবং B উভয়ের বাইনারি মান চিহ্ন বিটসহ 8-বিটের মধ্যে আঁটায় স্বয়ংক্রিয়ভাবে 8-বিট রেজিস্টার ব্যবহৃত হচ্ছে।';
+                } else {
+                    bitWidth = 16;
+                    bitStatusBadge.textContent = '16-বিট রেজিস্টার';
+                    if (aExceeds8Bit && bExceeds8Bit) {
+                        bitStatusText.textContent = `এখানে A (${aBinLen}-বিট) এবং B (${bBinLen}-বিট) উভয়ের বাইনারি মান 7-বিটের বেশি হওয়ায় (চিহ্ন বিটসহ 8-বিটে জায়গা না হওয়ায়) স্বয়ংক্রিয়ভাবে 16-বিট রেজিস্টার ব্যবহৃত হচ্ছে।`;
+                    } else if (aExceeds8Bit) {
+                        bitStatusText.textContent = `এখানে প্রথম সংখ্যা A এর বাইনারি মান (${aBinLen}-বিট) 7-বিটের বেশি হওয়ায় (চিহ্ন বিটসহ 8-বিটে জায়গা না হওয়ায়) স্বয়ংক্রিয়ভাবে 16-বিট রেজিস্টার ব্যবহৃত হচ্ছে।`;
+                    } else if (bExceeds8Bit) {
+                        bitStatusText.textContent = `এখানে দ্বিতীয় সংখ্যা B এর বাইনারি মান (${bBinLen}-বিট) 7-বিটের বেশি হওয়ায় (চিহ্ন বিটসহ 8-বিটে জায়গা না হওয়ায়) স্বয়ংক্রিয়ভাবে 16-বিট রেজিস্টার ব্যবহৃত হচ্ছে।`;
+                    } else {
+                        bitStatusText.textContent = `এখানে A এবং B আলাদাভাবে 8-বিটে আঁটলেও বিয়োগফল (A - B) 8-বিটের সীমা (-128 থেকে +127) অতিক্রম করায় স্বয়ংক্রিয়ভাবে 16-বিট রেজিস্টার ব্যবহৃত হচ্ছে।`;
+                    }
+                }
+            } else if (selectedRegisterMode === '8') {
+                bitWidth = 8;
+                bitStatusBadge.textContent = '8-বিট রেজিস্টার';
+                if (fits8Bit) {
+                    bitStatusText.textContent = 'তুমি ম্যানুয়ালি 8-বিট রেজিস্টার বেছে নিয়েছ।';
+                } else if (aExceeds8Bit && bExceeds8Bit) {
+                    bitStatusText.textContent = 'সতর্কতা: A এবং B উভয়ের মান 8-বিটের চেয়ে বড় হওয়ায় ওভারফ্লো (Overflow) ঘটবে!';
+                } else if (aExceeds8Bit) {
+                    bitStatusText.textContent = 'সতর্কতা: প্রথম সংখ্যা A এর মান 8-বিটের চেয়ে বড় হওয়ায় ওভারফ্লো (Overflow) ঘটবে!';
+                } else if (bExceeds8Bit) {
+                    bitStatusText.textContent = 'সতর্কতা: দ্বিতীয় সংখ্যা B এর মান 8-বিটের চেয়ে বড় হওয়ায় ওভারফ্লো (Overflow) ঘটবে!';
+                } else {
+                    bitStatusText.textContent = 'সতর্কতা: বিয়োগফল 8-বিটের ধারণক্ষমতার চেয়ে বড় হওয়ায় ওভারফ্লো (Overflow) ঘটবে!';
+                }
+            } else {
+                bitWidth = 16;
+                bitStatusBadge.textContent = '16-বিট রেজিস্টার';
+                bitStatusText.textContent = 'তুমি ম্যানুয়ালি 16-বিট রেজিস্টার বেছে নিয়েছ।';
+            }
+
+            /* -------------------------------------------------------------
+               ধাপ 1: প্রথম সংখ্যা (A) এর বাইনারি ও রেজিস্টার মান
+            -------------------------------------------------------------- */
+            document.getElementById('step1Title').textContent = `প্রথম সংখ্যা (A) এর বাইনারি ও ${bitWidth}-বিট রেজিস্টার মান`;
+            document.getElementById('shortcutBoxA').innerHTML = renderShortcutConversionHTML(resA);
+
+            const binA = toTwosComplement(valA, bitWidth);
+            const regDescA = document.getElementById('regDescA');
+            if (valA >= 0) {
+                regDescA.textContent = `বামপাশে প্রয়োজনীয় সংখ্যক 0 বসিয়ে ${bitWidth}-বিট রেজিস্টার পূর্ণ করা হলো:`;
+            } else {
+                regDescA.textContent = `সংখ্যাটি ঋণাত্মক হওয়ায় ${bitWidth}-বিট 2-এর পরিপূরক মান নেওয়া হলো:`;
+            }
+            renderBitRow(document.getElementById('bitsRowA'), binA, true);
+
+            /* -------------------------------------------------------------
+               ধাপ 2: দ্বিতীয় সংখ্যা (B) এর বাইনারি ও 2-এর পরিপূরক (-B) নির্ণয়
+            -------------------------------------------------------------- */
+            document.getElementById('step2Title').textContent = `দ্বিতীয় সংখ্যা (B) এর বাইনারি ও ${bitWidth}-বিট 2-এর পরিপূরক (-B) নির্ণয়`;
+            document.getElementById('shortcutBoxB').innerHTML = renderShortcutConversionHTML(resB);
+
+            document.getElementById('labelBRegTitle').textContent = `ধাপ 2.1: B এর ${bitWidth}-বিট রেজিস্টার মান`;
+            const binMagB = toTwosComplement(valB, bitWidth);
+            renderBitRow(document.getElementById('bitsRowBMag'), binMagB, false);
+
+            const onesCompB = invertBits(binMagB);
+            renderBitRow(document.getElementById('bitsRowBOnes'), onesCompB, false);
+
+            // Systematic +1 Addition Table with Carry in Step 2.3
+            const binNegB = toTwosComplement(negB, bitWidth);
+            document.getElementById('step23AdditionBox').innerHTML = renderPlusOneTableHTML(
+                onesCompB,
+                bitWidth,
+                "1's Complement",
+                "2's Complement (-B)",
+                true
+            );
+
+            /* -------------------------------------------------------------
+               ধাপ 3: বাইনারি যোগ: A + (-B)
+            -------------------------------------------------------------- */
+            document.getElementById('step3Title').textContent = `${bitWidth}-বিট বাইনারি যোগ: A + (-B)`;
+
+            let carries = new Array(bitWidth).fill(0);
+            let sums = new Array(bitWidth).fill(0);
+            let c = 0;
+
+            for (let i = bitWidth - 1; i >= 0; i--) {
+                const bitA = parseInt(binA[i], 10);
+                const bitB = parseInt(binNegB[i], 10);
+                const s = bitA + bitB + c;
+                sums[i] = s % 2;
+                c = Math.floor(s / 2);
+                carries[i] = c;
+            }
+
+            const carryOutBit = c;
+            const sumBitStr = sums.join('');
+            const signBit = sums[0];
+
+            // Build Full Adder Table
+            const tblHead = document.getElementById('tblHead');
+            let thHtml = `
+                <tr class="text-xs text-neutral-400 border-b border-neutral-800">
+                    <th class="py-2 px-2.5 text-right font-sans">বিবরণ</th>
+                    <th class="py-2 px-2.5 font-mono font-bold text-neutral-300 border-r border-neutral-800">${bitWidth + 1}ম (Carry)</th>
+                    <th class="py-2 px-2 font-mono font-bold text-white">${bitWidth}ম (Sign)</th>
+            `;
+            for (let i = bitWidth - 2; i >= 0; i--) {
+                thHtml += `<th class="py-2 px-1.5 font-mono">${i + 1}ম</th>`;
+            }
+            thHtml += `</tr>`;
+            tblHead.innerHTML = thHtml;
+
+            const tblRowCarry = document.getElementById('tblRowCarry');
+            const tblRowA = document.getElementById('tblRowA');
+            const tblRowNegB = document.getElementById('tblRowNegB');
+            const tblRowSum = document.getElementById('tblRowSum');
+
+            tblRowCarry.innerHTML = '<td class="py-1 px-2.5 text-right font-sans">হাতে থাকা (Carry):</td>';
+            tblRowA.innerHTML = '<td class="py-2 px-2.5 text-right font-sans font-bold">A :</td>';
+            tblRowNegB.innerHTML = '<td class="py-2 px-2.5 text-right font-sans font-bold">+ (-B) :</td>';
+            tblRowSum.innerHTML = '<td class="py-2 px-2.5 text-right font-sans font-bold">যোগফল :</td>';
+
+            // Carry-out column (Show '1' only if carryOutBit == 1, otherwise blank in carry row)
+            const carryOutDisplay = carryOutBit === 1 ? '1' : '';
+            tblRowCarry.innerHTML += `<td class="py-1 px-2.5 text-white font-bold border-r border-neutral-800">${carryOutDisplay}</td>`;
+            tblRowA.innerHTML += `<td class="py-2 px-2.5 text-neutral-600 border-r border-neutral-800"></td>`;
+            tblRowNegB.innerHTML += `<td class="py-2 px-2.5 text-neutral-600 border-r border-neutral-800"></td>`;
+            tblRowSum.innerHTML += `<td class="py-2 px-2.5 text-white bg-neutral-900 border-r border-neutral-800 font-extrabold">${carryOutDisplay}</td>`;
+
+            for (let i = 0; i < bitWidth; i++) {
+                const incCarry = (i === bitWidth - 1) ? 0 : carries[i + 1];
+                const incCarryText = incCarry === 1 ? '1' : ''; // Blank if 0!
+                const isSignCol = (i === 0);
+
+                tblRowCarry.innerHTML += `<td class="py-1 px-1.5 font-bold text-white">${incCarryText}</td>`;
+                tblRowA.innerHTML += `<td class="py-2 px-1.5 ${isSignCol ? 'font-bold text-white' : ''}">${binA[i]}</td>`;
+                tblRowNegB.innerHTML += `<td class="py-2 px-1.5 ${isSignCol ? 'font-bold text-white' : ''}">${binNegB[i]}</td>`;
+                tblRowSum.innerHTML += `<td class="py-2 px-1.5 ${isSignCol ? 'bg-white text-black font-extrabold rounded-sm' : 'text-white'}">${sums[i]}</td>`;
+            }
+
+            // Carry Bit Note
+            const carryNoteBox = document.getElementById('carryNoteBox');
+            if (carryOutBit === 1) {
+                carryNoteBox.innerHTML = `
+                    <strong class="text-white block font-mono">ক্যারি বিট (${bitWidth + 1}ম বিট) = 1</strong>
+                    <span class="text-neutral-400 mt-0.5 block">এটি রেজিস্টারের বাইরে চলে যাওয়ায় ক্যারি বিট বিবেচনা করা হয় না (বাদ দেওয়া হলো)।</span>
+                `;
+            } else {
+                carryNoteBox.innerHTML = `
+                    <strong class="text-white block font-mono">ক্যারি বিট (${bitWidth + 1}ম বিট) নেই</strong>
+                    <span class="text-neutral-400 mt-0.5 block">যোগফলে কোনো অতিরিক্ত ক্যারি বিট তৈরি হয়নি।</span>
+                `;
+            }
+
+            // Sign Bit Note
+            const signNoteBox = document.getElementById('signNoteBox');
+            if (signBit === 0) {
+                signNoteBox.innerHTML = `
+                    <strong class="text-white block font-mono">চিহ্ন বিট (${bitWidth}ম বিট) = 0 (ধনাত্মক)</strong>
+                    <span class="text-neutral-400 mt-0.5 block">সর্ববামের বিট 0 হওয়ায় ফলাফলটি ধনাত্মক সংখ্যা।</span>
+                `;
+            } else {
+                signNoteBox.innerHTML = `
+                    <strong class="text-white block font-mono">চিহ্ন বিট (${bitWidth}ম বিট) = 1 (ঋণাত্মক)</strong>
+                    <span class="text-neutral-400 mt-0.5 block">সর্ববামের বিট 1 হওয়ায় ফলাফলটি ঋণাত্মক (2-এর পরিপূরক আকারে আছে)।</span>
+                `;
+            }
+
+            /* -------------------------------------------------------------
+               ধাপ 4: চূড়ান্ত ফলাফল বিশ্লেষণ (বাইনারি - কোনো + বা - চিহ্ন ছাড়া)
+            -------------------------------------------------------------- */
+            const finalEvaluationBlock = document.getElementById('finalEvaluationBlock');
+            const minAllowed = -(1 << (bitWidth - 1));
+            const maxAllowed = (1 << (bitWidth - 1)) - 1;
+            const isOverflow = (diffResult < minAllowed || diffResult > maxAllowed);
+
+            let evalHtml = `
+                <div class="bg-black p-4 rounded-lg border border-neutral-800 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-800 pb-3">
+                        <span class="text-neutral-300 text-xs sm:text-sm">${bitWidth}-বিট রেজিস্টারে প্রাপ্ত যোগফল:</span>
+                        <span class="mono-bits font-bold text-white text-base sm:text-lg bg-neutral-900 border border-neutral-700 px-3 py-1 rounded">${sumBitStr}</span>
+                    </div>
+            `;
+
+            if (isOverflow) {
+                evalHtml += `
+                    <div class="p-3.5 bg-neutral-900 border-2 border-white rounded text-xs sm:text-sm text-neutral-200">
+                        <strong class="text-white block mb-1">ওভারফ্লো (Overflow) ঘটেছে!</strong>
+                        তোমার দেওয়া সংখ্যার ফলাফল 8-বিট রেজিস্টারের ধারণক্ষমতার চেয়ে বড়। সঠিক ফলাফল পেতে উপরে <strong class="text-white">স্বয়ংক্রিয় (Auto)</strong> বা <strong class="text-white">16-বিট</strong> বাটনটি বেছে নাও।
+                    </div>
+                `;
+            } else if (signBit === 0) {
+                const strippedBin = sumBitStr.replace(/^0+(?!$)/, '');
+                evalHtml += `
+                    <div class="p-4 bg-neutral-900 border border-white rounded-lg flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-neutral-200 font-bold text-xs sm:text-sm">নির্ণেয় বাইনারি ফলাফল:</span>
+                        <span class="font-mono text-lg sm:text-xl font-extrabold text-white">(${sumBitStr})<sub>2</sub> <span class="text-neutral-400 text-sm font-normal">বা</span> (${strippedBin})<sub>2</sub></span>
+                    </div>
+                `;
+            } else {
+                // Negative result: Re-take 2's complement (1's complement + 1) systematically with carry table
+                const invSum = invertBits(sumBitStr);
+                const trueMagVal = parseInt(invSum, 2) + 1;
+                const trueMagBinFull = (trueMagVal & ((1 << bitWidth) - 1)).toString(2).padStart(bitWidth, '0');
+                const trueMagBinClean = trueMagBinFull.replace(/^0+(?!$)/, '');
+
+                const step4PlusOneTable = renderPlusOneTableHTML(
+                    invSum,
+                    bitWidth,
+                    "1's Complement",
+                    "2's Complement (প্রকৃত মান)",
+                    false
+                );
+
+                evalHtml += `
+                    <div class="space-y-3 text-xs sm:text-sm">
+                        <p class="text-neutral-300">
+                            চিহ্ন বিট <code class="text-white font-mono font-bold">1</code> হওয়ায় প্রাপ্ত যোগফলটি 2-এর পরিপূরক আকারে আছে। প্রকৃত মান পেতে এটিকে পুনরায় 2-এর পরিপূরক (বিট উল্টে + 1 যোগ) করা হলো:
+                        </p>
+
+                        <div class="bg-[#050505] p-3.5 rounded-lg border border-neutral-800 space-y-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2 text-xs border-b border-neutral-900 pb-2">
+                                <span class="text-neutral-400">1-এর পরিপূরক (প্রাপ্ত যোগফলের বিট উল্টে):</span>
+                                <span class="font-mono font-bold text-neutral-200 tracking-wider">${invSum}</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                ${step4PlusOneTable}
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-neutral-900 border border-white rounded-lg flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-neutral-200 font-bold">নির্ণেয় বাইনারি ফলাফল:</span>
+                            <span class="font-mono text-lg sm:text-xl font-extrabold text-white">(${trueMagBinFull})<sub>2</sub> <span class="text-neutral-400 text-sm font-normal">বা</span> (${trueMagBinClean})<sub>2</sub></span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            evalHtml += `</div>`;
+            finalEvaluationBlock.innerHTML = evalHtml;
+        }
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorAlert.classList.remove('hidden');
+            stepsWrapper.classList.add('hidden');
+        }
+
+        function hideError() {
+            errorAlert.classList.add('hidden');
+            stepsWrapper.classList.remove('hidden');
+        }
+
+        inputA.addEventListener('input', processCalculation);
+        inputB.addEventListener('input', processCalculation);
+        baseA.addEventListener('change', processCalculation);
+        baseB.addEventListener('change', processCalculation);
+
+        // Initial render
+        processCalculation();
+    </script>
+</body>
+</html>
